@@ -32,3 +32,49 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+
+#name: Generate Protoc Dart Plugin
+#
+#on:
+#  push:
+#    branches:
+#      - main # Change back to develop
+#
+#jobs:
+#  dart:
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - uses: dart-lang/setup-dart@v1
+#
+#      - name: Generate Dart files
+#        run: ./scripts/gen-protoc-gen-dart
+#
+#      - uses: uraimo/run-on-arch-action@v2.1.1
+#        name: Build artifact
+#        id: build
+#        with:
+#          arch: aarch64
+#          distro: ubuntu20.04
+#          run: |
+#            apt update && apt install -yq wget unzip
+#            wget https://storage.googleapis.com/dart-archive/channels/stable/release/2.16.1/sdk/dartsdk-linux-arm64-release.zip
+#            unzip dartsdk-linux-arm64-release.zip -d $HOME && rm dartsdk-linux-arm64-release.zip
+#            PATH=$HOME/dart-sdk/bin:$PATH
+#            ./scripts/gen-protoc-gen-dart
+#
+#      - name: Create Pull Request
+#        id: cpr
+#        uses: peter-evans/create-pull-request@v3
+#        with:
+#          title: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
+#          commit-message: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
+#          body: ""
+#          branch: feat/gen-pgd-linux
+#
+#      - name: Check outputs
+#        run: |
+#          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+#          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
