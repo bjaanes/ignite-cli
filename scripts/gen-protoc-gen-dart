@@ -19,6 +19,8 @@ case $machinetype in
     ;;
   "aarch64") arch="arm64"
     ;;
+  "arm64") arch="arm64"
+    ;;
   *) echo "$machinetype is not supported"; exit 1;
     ;;
 esac
