@@ -10,7 +10,7 @@ jobs:
   release-nightly:
     runs-on: ubuntu-latest
     env:
-      working-directory: go/src/github.com/bjaanes/starport-playground
+      working-directory: go/src/github.com/bjaanes/starport # TODO Change back
 
     steps:
       - uses: actions/checkout@v2

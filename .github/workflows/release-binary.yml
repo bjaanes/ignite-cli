@@ -9,7 +9,7 @@ jobs:
   binary:
     runs-on: ubuntu-latest
     env:
-      working-directory: go/src/github.com/bjaanes/starport-playground
+      working-directory: go/src/github.com/bjaanes/starport # TODO Change back
 
     steps:
       - name: Set up Go

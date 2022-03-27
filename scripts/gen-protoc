@@ -15,7 +15,7 @@ setdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)" # this li
 
 # Check dir else create save dir
 if [[ $(basename ${setdir}) = "scripts" ]] ; then
-    if [[ $(basename $(dirname "${setdir}")) = "starport-playground" ]] ; then
+    if [[ $(basename $(dirname "${setdir}")) = "starport" ]] ; then
         [[ -d $(dirname "${setdir}/pkg/protoc/data") ]] || mkdir -p "$(dirname "${setdir}")/starport/pkg/protoc/data"
     else
         echo "Attention: you are running the script out of the startport project please run it this script in: https://github.com/tendermint/starport"
