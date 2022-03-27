@@ -8,7 +8,11 @@ jobs:
     runs-on: self-hosted
     defaults:
       run:
-        shell: "/usr/bin/arch -arch arm64e /bin/bash {0}"
+        shell: /usr/bin/arch -arch ${{ matrix.runner }} /bin/bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ arm64e, x86_64 ]
     steps:
       - run: |
           uname -a
