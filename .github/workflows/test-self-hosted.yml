@@ -22,3 +22,17 @@ jobs:
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.runner }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.runner }}"
+          body: ""
+          branch: feat/gen-pgd-${{ matrix.runner }}
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
