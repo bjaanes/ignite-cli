@@ -1,0 +1,25 @@
+name: Generate protoc binaries
+
+on:
+  push:
+    branches:
+      - issue-2130 # Change back to develop
+
+jobs:
+  gen-protoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: sudo apt install wget unzip jq
+
+      - run: ./scripts/gen-protoc
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc): update binaries"
+          commit-message: "feat(pkg/protoc): update binaries"
+          body: ""
+          branch: feat/gen-protoc
