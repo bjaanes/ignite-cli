@@ -58,7 +58,7 @@ jobs:
           title: "feat(pkg/protoc-gen-dart): update binary on linux arm64"
           commit-message: "feat(pkg/protoc-gen-dart): update binary on linux arm64"
           body: ""
-          branch: feat/gen-pgd-${{ matrix.runner }}
+          branch: feat/gen-pgd-linux-arm64
 
       - name: Check outputs
         run: |
@@ -84,7 +84,7 @@ jobs:
           title: "feat(pkg/protoc-gen-dart): update binary on linux amd64"
           commit-message: "feat(pkg/protoc-gen-dart): update binary on amd64"
           body: ""
-          branch: feat/gen-pgd-${{ matrix.runner }}
+          branch: feat/gen-pgd-linux-amd64
 
       - name: Check outputs
         run: |
