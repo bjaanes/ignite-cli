@@ -4,8 +4,8 @@ on:
     branches:
       - issue-2130
 jobs:
-  test-self-hosted-job:
-    runs-on: self-hosted
+  test-self-hosted-job-mac:
+    runs-on: [self-hosted, macOS]
     defaults:
       run:
         shell: /usr/bin/arch -arch ${{ matrix.runner }} /bin/bash -l {0}
@@ -27,8 +27,60 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.runner }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.runner }}"
+          title: "feat(pkg/protoc-gen-dart): update binary on mac ${{ matrix.runner }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on mac ${{ matrix.runner }}"
+          body: ""
+          branch: feat/gen-pgd-${{ matrix.runner }}
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+  test-self-hosted-job-linux-arm64:
+    runs-on: [ self-hosted, linux, arm64 ]
+    steps:
+      - run: |
+          uname -a
+      - uses: actions/checkout@v2
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Generate Dart files
+        run: ./scripts/gen-protoc-gen-dart
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc-gen-dart): update binary on linux arm64"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on linux arm64"
+          body: ""
+          branch: feat/gen-pgd-${{ matrix.runner }}
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+  test-self-hosted-job-linux-amd64:
+    runs-on: [ self-hosted, linux, arm64 ]
+    steps:
+      - run: |
+          uname -a
+      - uses: actions/checkout@v2
+
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Generate Dart files
+        run: ./scripts/gen-protoc-gen-dart
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc-gen-dart): update binary on linux amd64"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on amd64"
           body: ""
           branch: feat/gen-pgd-${{ matrix.runner }}
 
