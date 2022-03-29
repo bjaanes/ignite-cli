@@ -38,7 +38,7 @@ jobs:
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
   test-self-hosted-job-linux-arm64:
-    runs-on: [ self-hosted, linux, arm64 ]
+    runs-on: [self-hosted, linux, arm64]
     steps:
       - run: |
           uname -a

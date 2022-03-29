@@ -5,8 +5,10 @@ on:
     branches:
       - issue-2130 # Change back to develop
 
+# Build instructions taken from: https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
+
 jobs:
-  gen-protoc:
+  gen-protoc-linux-amd64:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,8 +45,140 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc): update binaries"
-          commit-message: "feat(pkg/protoc): update binaries"
+          title: "feat(pkg/protoc): update binaries linux amd64"
+          commit-message: "feat(pkg/protoc): update binaries linux amd64"
+          body: ""
+          branch: feat/gen-protoc
+          path: "starport"
+
+  gen-protoc-darwin-amd64:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'starport'
+
+      - run: brew install jq autoconf automake libtool
+      - name: get link to latest release of protobuf
+        id: latestrelease
+        run: |
+          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
+
+      - name: "Download sources"
+        run: |
+          mkdir protobuf
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
+
+      - name: "Build"
+        run: |
+          mkdir output && cd output
+          OUTPUTDIR=$(pwd)
+          cd ../protobuf
+          ls -la
+          ./configure --prefix=$OUTPUTDIR
+          make -j$(nproc)
+          make install
+
+      - name: "Update binaries"
+        run: |
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc): update binaries linux arm64"
+          commit-message: "feat(pkg/protoc): update binaries linux arm64"
+          body: ""
+          branch: feat/gen-protoc
+          path: "starport"
+
+  gen-protoc-darwin-arm64:
+    runs-on: [self-hosted, macOS]
+    defaults:
+      run:
+        shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'starport'
+
+      - run: brew install jq autoconf automake libtool
+      - name: get link to latest release of protobuf
+        id: latestrelease
+        run: |
+          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
+
+      - name: "Download sources"
+        run: |
+          mkdir protobuf
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
+
+      - name: "Build"
+        run: |
+          mkdir output && cd output
+          OUTPUTDIR=$(pwd)
+          cd ../protobuf
+          ls -la
+          ./configure --prefix=$OUTPUTDIR
+          make -j$(nproc)
+          make install
+
+      - name: "Update binaries"
+        run: |
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc): update binaries linux arm64"
+          commit-message: "feat(pkg/protoc): update binaries linux arm64"
+          body: ""
+          branch: feat/gen-protoc
+          path: "starport"
+
+  gen-protoc-linux-arm64:
+    runs-on: [self-hosted, linux, arm64]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'starport'
+
+      - run: sudo apt install jq autoconf automake libtool curl make g++ unzip
+      - name: get link to latest release of protobuf
+        id: latestrelease
+        run: |
+          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
+
+      - name: "Download sources"
+        run: |
+          mkdir protobuf
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
+
+      - name: "Build"
+        run: |
+          mkdir output && cd output
+          OUTPUTDIR=$(pwd)
+          cd ../protobuf
+          ls -la
+          ./configure --prefix=$OUTPUTDIR
+          make -j$(nproc)
+          make install
+
+      - name: "Update binaries"
+        run: |
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc): update binaries linux arm64"
+          commit-message: "feat(pkg/protoc): update binaries linux arm64"
           body: ""
           branch: feat/gen-protoc
           path: "starport"
