@@ -1,0 +1,51 @@
+name: New Generate protoc binaries
+
+on:
+  push:
+    branches:
+      - issue-2130 # Change back to develop
+
+jobs:
+  gen-protoc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: 'starport'
+
+      - run: sudo apt install jq autoconf automake libtool curl make g++ unzip
+      - name: get link to latest release of protobuf
+        id: latestrelease
+        run: |
+          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
+
+      - name: "Download sources"
+        run: |
+          mkdir protobuf
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf
+
+      - name: "Build"
+        run: |
+          mkdir output && cd output
+          OUTPUTDIR=$(pwd)
+          cd ../protobuf
+          ./configure --prefix=OUTPUTDIR
+          make -j$(nproc)
+          make install
+
+      - name: "Update binaries"
+        run: |
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc): update binaries"
+          commit-message: "feat(pkg/protoc): update binaries"
+          body: ""
+          branch: feat/gen-protoc
+          path: "starport"
+          
+          
