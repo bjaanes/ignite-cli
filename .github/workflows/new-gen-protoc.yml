@@ -48,7 +48,7 @@ jobs:
           title: "feat(pkg/protoc): update binaries linux amd64"
           commit-message: "feat(pkg/protoc): update binaries linux amd64"
           body: ""
-          branch: feat/gen-protoc
+          branch: feat/gen-protoc-linux-amd64
           path: "starport"
 
   gen-protoc-darwin-amd64:
@@ -82,16 +82,16 @@ jobs:
 
       - name: "Update binaries"
         run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_darwin_amd64
 
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc): update binaries linux arm64"
-          commit-message: "feat(pkg/protoc): update binaries linux arm64"
+          title: "feat(pkg/protoc): update binaries darwin amd64"
+          commit-message: "feat(pkg/protoc): update binaries darwin amd64"
           body: ""
-          branch: feat/gen-protoc
+          branch: feat/gen-protoc-darwin-amd64
           path: "starport"
 
   gen-protoc-darwin-arm64:
@@ -128,16 +128,16 @@ jobs:
 
       - name: "Update binaries"
         run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_darwin_arm64
 
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc): update binaries linux arm64"
-          commit-message: "feat(pkg/protoc): update binaries linux arm64"
+          title: "feat(pkg/protoc): update binaries darwin arm64"
+          commit-message: "feat(pkg/protoc): update binaries darwin arm64"
           body: ""
-          branch: feat/gen-protoc
+          branch: feat/gen-protoc-darwin-arm64
           path: "starport"
 
   gen-protoc-linux-arm64:
@@ -171,7 +171,7 @@ jobs:
 
       - name: "Update binaries"
         run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_arm64
 
       - name: Create Pull Request
         id: cpr
@@ -180,7 +180,7 @@ jobs:
           title: "feat(pkg/protoc): update binaries linux arm64"
           commit-message: "feat(pkg/protoc): update binaries linux arm64"
           body: ""
-          branch: feat/gen-protoc
+          branch: feat/gen-protoc-linux-arm64
           path: "starport"
           
           
