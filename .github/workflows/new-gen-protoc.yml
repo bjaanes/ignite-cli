@@ -30,6 +30,7 @@ jobs:
           mkdir output && cd output
           OUTPUTDIR=$(pwd)
           cd ../protobuf
+          ls -la
           ./configure --prefix=OUTPUTDIR
           make -j$(nproc)
           make install
