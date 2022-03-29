@@ -23,7 +23,7 @@ jobs:
       - name: "Download sources"
         run: |
           mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
 
       - name: "Build"
         run: |
@@ -31,7 +31,7 @@ jobs:
           OUTPUTDIR=$(pwd)
           cd ../protobuf
           ls -la
-          ./configure --prefix=OUTPUTDIR
+          ./configure --prefix=$OUTPUTDIR
           make -j$(nproc)
           make install
 
