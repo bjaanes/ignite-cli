@@ -23,7 +23,7 @@ jobs:
       - name: "Download sources"
         run: |
           mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf
+          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1
 
       - name: "Build"
         run: |
