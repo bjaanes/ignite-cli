@@ -11,9 +11,6 @@ on:
   push:
     branches:
       - issue-2130 # Change back to develop
-    paths:
-      - "scripts/data/gen-nodetime/**"
-      - "scripts/gen-nodetime"
 
 jobs:
   build-nodetime:

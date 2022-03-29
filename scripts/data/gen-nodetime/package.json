@@ -4,7 +4,7 @@
 	"description": "Starport's Swiss knife",
 	"scripts": {
 		"prebuild": "rm -rf dist && tsc",
-		"build": "pkg -c package.json -o nodetime nodetime"
+		"build": "pkg --public-packages \"*\" --public --no-bytecode -c package.json -o nodetime nodetime"
 	},
 	"dependencies": {
 		"@confio/relayer": "0.2.0",
