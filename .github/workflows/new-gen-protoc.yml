@@ -15,7 +15,7 @@ jobs:
         with:
           path: 'starport'
 
-      - run: sudo apt install jq autoconf automake libtool curl make g++ unzip
+      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
       - name: get link to latest release of protobuf
         id: latestrelease
         run: |
@@ -147,7 +147,7 @@ jobs:
         with:
           path: 'starport'
 
-      - run: sudo apt install jq autoconf automake libtool curl make g++ unzip
+      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
       - name: get link to latest release of protobuf
         id: latestrelease
         run: |
