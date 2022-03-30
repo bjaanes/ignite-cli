@@ -42,7 +42,7 @@ jobs:
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
   gen-protoc-gen-dart-linux:
-    runs-on: [self-hosted, linux, arm64]
+    runs-on: ${{ matrix.runner.runs-on }}
     strategy:
       fail-fast: false
       matrix:
