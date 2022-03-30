@@ -1,4 +1,4 @@
-name: Test self-hosted
+name: Generate protoc dart binaries
 on:
   push:
     branches:
@@ -8,15 +8,21 @@ jobs:
     runs-on: [self-hosted, macOS]
     defaults:
       run:
-        shell: /usr/bin/arch -arch ${{ matrix.arch }} /bin/bash -l {0}
+        shell: /usr/bin/arch -arch ${{ matrix.runner.arch }} /bin/bash -l {0}
     strategy:
       fail-fast: false
       matrix:
-        arch: [ arm64e, x86_64 ]
+        runner:
+          - arch: arm64e
+            dart-arch: arm64
+          - arch: x86_64
+            dart-arch: x64
     steps:
       - uses: actions/checkout@v2
 
       - uses: dart-lang/setup-dart@v1
+        with:
+          architecture: ${{ matrix.runner.dart-arch }}
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
@@ -25,10 +31,10 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.arch }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.arch }}"
+          title: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.runner.dart-arch }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.runner.dart-arch }}"
           body: ""
-          branch: feat/gen-pgd-darwin-${{ matrix.arch }}
+          branch: feat/gen-pgd-darwin-${{ matrix.runner.dart-arch }}
 
       - name: Check outputs
         run: |
@@ -42,15 +48,15 @@ jobs:
       matrix:
         runner:
           - runs-on: ubuntu-latest
-            arch: amd64
+            dart-arch: x64
           - runs-on: [self-hosted, linux, arm64]
-            arch: arm64
+            dart-arch: arm64
     steps:
       - uses: actions/checkout@v2
 
       - uses: dart-lang/setup-dart@v1
         with:
-          architecture: ${{ matrix.runner.arch }}
+          architecture: ${{ matrix.runner.dart-arch }}
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
@@ -59,10 +65,10 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.arch }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.arch }}"
+          title: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.dart-arch }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.dart-arch }}"
           body: ""
-          branch: feat/gen-pgd-linux-${{ matrix.runner.arch }}
+          branch: feat/gen-pgd-linux-${{ matrix.runner.dart-arch }}
 
       - name: Check outputs
         run: |
