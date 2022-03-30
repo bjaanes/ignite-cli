@@ -9,7 +9,15 @@ on:
 
 jobs:
   gen-protoc-linux-amd64:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - runs-on: ubuntu-latest
+            arch: amd64
+          - runs-on: [self-hosted, linux, arm64]
+            arch: arm64
     steps:
       - uses: actions/checkout@v2
 
@@ -22,35 +30,20 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc): update binaries linux amd64"
-          commit-message: "feat(pkg/protoc): update binaries linux amd64"
+          title: "feat(pkg/protoc): update binaries linux ${{ matrix.runner.arch }}"
+          commit-message: "feat(pkg/protoc): update binaries linux ${{ matrix.runner.arch }}"
           body: ""
-          branch: feat/gen-protoc-linux-amd64
-
-  gen-protoc-darwin-amd64:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v2
-
-      - run: brew install jq autoconf automake libtool
-
-      - name: Build protoc files
-        run: ./scripts/gen-protoc2
-
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
-          title: "feat(pkg/protoc): update binaries darwin amd64"
-          commit-message: "feat(pkg/protoc): update binaries darwin amd64"
-          body: ""
-          branch: feat/gen-protoc-darwin-amd64
+          branch: feat/gen-protoc-linux-${{ matrix.runner.arch }}
 
   gen-protoc-darwin-arm64:
     runs-on: [self-hosted, macOS]
     defaults:
       run:
-        shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
+        shell: /usr/bin/arch -arch ${{ matrix.arch }} /bin/bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ arm64e, x86_64 ]
     steps:
       - uses: actions/checkout@v2
 
@@ -63,28 +56,8 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc): update binaries darwin arm64"
-          commit-message: "feat(pkg/protoc): update binaries darwin arm64"
+          title: "feat(pkg/protoc): update binaries darwin ${{ matrix.arch }}"
+          commit-message: "feat(pkg/protoc): update binaries darwin ${{ matrix.arch }}"
           body: ""
-          branch: feat/gen-protoc-darwin-arm64
-
-  gen-protoc-linux-arm64:
-    runs-on: [self-hosted, linux, arm64]
-    steps:
-      - uses: actions/checkout@v2
-
-      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
-
-      - name: Build protoc files
-        run: ./scripts/gen-protoc2
-
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
-          title: "feat(pkg/protoc): update binaries linux arm64"
-          commit-message: "feat(pkg/protoc): update binaries linux arm64"
-          body: ""
-          branch: feat/gen-protoc-linux-arm64
-          
+          branch: feat/gen-protoc-darwin-${{ matrix.arch }}
           
