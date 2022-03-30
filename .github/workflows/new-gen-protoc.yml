@@ -12,34 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: 'starport'
 
       - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
-      - name: get link to latest release of protobuf
-        id: latestrelease
-        run: |
-          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
-          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
 
-      - name: "Download sources"
-        run: |
-          mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
-
-      - name: "Build"
-        run: |
-          mkdir output && cd output
-          OUTPUTDIR=$(pwd)
-          cd ../protobuf
-          ls -la
-          ./configure --prefix=$OUTPUTDIR
-          make -j$(nproc)
-          make install
-
-      - name: "Update binaries"
-        run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_amd64
+      - name: Build protoc files
+        run: ./scripts/gen-protoc2
 
       - name: Create Pull Request
         id: cpr
@@ -55,34 +32,11 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: 'starport'
 
       - run: brew install jq autoconf automake libtool
-      - name: get link to latest release of protobuf
-        id: latestrelease
-        run: |
-          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
-          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
 
-      - name: "Download sources"
-        run: |
-          mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
-
-      - name: "Build"
-        run: |
-          mkdir output && cd output
-          OUTPUTDIR=$(pwd)
-          cd ../protobuf
-          ls -la
-          ./configure --prefix=$OUTPUTDIR
-          make -j$(nproc)
-          make install
-
-      - name: "Update binaries"
-        run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_darwin_amd64
+      - name: Build protoc files
+        run: ./scripts/gen-protoc2
 
       - name: Create Pull Request
         id: cpr
@@ -101,39 +55,11 @@ jobs:
         shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: 'starport'
 
       - run: brew install jq autoconf automake libtool
 
-      - name: get link to latest release of protobuf
-        id: latestrelease
-        run: |
-          ls -la
-          pwd
-          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
-          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
-
-      - name: "Download sources"
-        run: |
-          ls -la
-          pwd
-          mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
-
-      - name: "Build"
-        run: |
-          mkdir output && cd output
-          OUTPUTDIR=$(pwd)
-          cd ../protobuf
-          ls -la
-          ./configure --prefix=$OUTPUTDIR
-          make -j$(nproc)
-          make install
-
-      - name: "Update binaries"
-        run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_darwin_arm64
+      - name: Build protoc files
+        run: ./scripts/gen-protoc2
 
       - name: Create Pull Request
         id: cpr
@@ -149,38 +75,11 @@ jobs:
     runs-on: [self-hosted, linux, arm64]
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: 'starport'
 
       - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
-      - name: get link to latest release of protobuf
-        id: latestrelease
-        run: |
-          ls -la
-          pwd
-          echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
-          | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
 
-      - name: "Download sources"
-        run: |
-          ls -la
-          pwd
-          mkdir protobuf
-          wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
-
-      - name: "Build"
-        run: |
-          mkdir output && cd output
-          OUTPUTDIR=$(pwd)
-          cd ../protobuf
-          ls -la
-          ./configure --prefix=$OUTPUTDIR
-          make -j$(nproc)
-          make install
-
-      - name: "Update binaries"
-        run: |
-          cp output/bin/protoc starport/starport/pkg/protoc/data/protoc_linux_arm64
+      - name: Build protoc files
+        run: ./scripts/gen-protoc2
 
       - name: Create Pull Request
         id: cpr
