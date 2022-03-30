@@ -105,14 +105,19 @@ jobs:
           path: 'starport'
 
       - run: brew install jq autoconf automake libtool
+
       - name: get link to latest release of protobuf
         id: latestrelease
         run: |
+          ls -la
+          pwd
           echo "::set-output name=downloadurl::$(curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
           | jq --raw-output '.assets[] | select(.name | test("protobuf-all.*\\.tar\\.gz")) | .browser_download_url')"
 
       - name: "Download sources"
         run: |
+          ls -la
+          pwd
           mkdir protobuf
           wget -c ${{ steps.latestrelease.outputs.downloadurl }} -O - | tar xzC protobuf --strip-components=1 #skipping first folder
 
