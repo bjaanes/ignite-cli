@@ -3,7 +3,7 @@ name: Generate protoc binaries
 on:
   push:
     branches:
-      - issue-2130 # Change back to develop
+      - dont-trigger # Change back to develop
 
 jobs:
   gen-protoc:
