@@ -12,7 +12,6 @@ set -e
 # Build tools
 [[ $(command -v make) ]] || { echo "'make' not found!" ; dep_check="false" ;}
 [[ $(command -v automake) ]] || { echo "'automake' not found!" ; dep_check="false" ;}
-[[ $(command -v automake) ]] || { echo "'automake' not found!" ; dep_check="false" ;}
 
 [[ ${dep_check} = "false" ]] && { echo "Some dependencie(s) isn't installed yet. Please install that dependencie(s)" ; exit 1 ;}
 
@@ -47,12 +46,12 @@ else
 fi
 
 # Check and Create Temp Directory
-[[ -d "/tmp/${0}" ]] && rm -rf "/tmp/${0}"
-mkdir -p "/tmp/${0}" && cd "/tmp/${0}"
-mkdir protobuf # Where we will build
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
 
-outputdir="/tmp/${0}/protocout"
+outputdir="$tmpdir/protocout"
 mkdir "$outputdir"
+mkdir protobuf # Where we will build
 
 # Fetch releases, go through assets (release artifacts) and find the relevant one
 download_url=$(curl -s $gh_protoc_release_url \
@@ -67,6 +66,4 @@ make install
 
 cp "$outputdir"/bin/protoc "$(dirname "${setdir}")/starport/pkg/protoc/data/${fname}"
 
-echo "/tmp/${0}"
-ls -la
-rm -rf "/tmp/${0}"
+rm -rf "$tmpdir"
