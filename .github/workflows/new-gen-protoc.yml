@@ -8,7 +8,7 @@ on:
 # Build instructions taken from: https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
 
 jobs:
-  gen-protoc-linux-amd64:
+  gen-protoc-linux:
     runs-on: ${{ matrix.runner.runs-on }}
     strategy:
       fail-fast: false
@@ -35,7 +35,7 @@ jobs:
           body: ""
           branch: feat/gen-protoc-linux-${{ matrix.runner.arch }}
 
-  gen-protoc-darwin-arm64:
+  gen-protoc-darwin:
     runs-on: [self-hosted, macOS]
     defaults:
       run:
