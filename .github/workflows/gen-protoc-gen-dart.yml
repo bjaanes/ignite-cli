@@ -1,16 +1,18 @@
-name: Generate Protoc Dart Plugin 
-
+name: Test self-hosted
 on:
   push:
     branches:
-      - develop
-
+      - issue-2130
 jobs:
-  dart:
-    runs-on: ${{ matrix.os }}
+  gen-protoc-gen-dart-darwin:
+    runs-on: [self-hosted, macOS]
+    defaults:
+      run:
+        shell: /usr/bin/arch -arch ${{ matrix.arch }} /bin/bash -l {0}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        arch: [ arm64e, x86_64 ]
     steps:
       - uses: actions/checkout@v2
 
@@ -23,58 +25,46 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
+          title: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.arch }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.arch }}"
           body: ""
-          branch: feat/gen-pgd-${{ matrix.os }}
+          branch: feat/gen-pgd-darwin-${{ matrix.arch }}
 
       - name: Check outputs
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
 
+  gen-protoc-gen-dart-linux:
+    runs-on: [self-hosted, linux, arm64]
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - runs-on: ubuntu-latest
+            arch: amd64
+          - runs-on: [self-hosted, linux, arm64]
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v2
 
-#name: Generate Protoc Dart Plugin
-#
-#on:
-#  push:
-#    branches:
-#      - main # Change back to develop
-#
-#jobs:
-#  dart:
-#    runs-on: ubuntu-20.04
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - uses: dart-lang/setup-dart@v1
-#
-#      - name: Generate Dart files
-#        run: ./scripts/gen-protoc-gen-dart
-#
-#      - uses: uraimo/run-on-arch-action@v2.1.1
-#        name: Build artifact
-#        id: build
-#        with:
-#          arch: aarch64
-#          distro: ubuntu20.04
-#          run: |
-#            apt update && apt install -yq wget unzip
-#            wget https://storage.googleapis.com/dart-archive/channels/stable/release/2.16.1/sdk/dartsdk-linux-arm64-release.zip
-#            unzip dartsdk-linux-arm64-release.zip -d $HOME && rm dartsdk-linux-arm64-release.zip
-#            PATH=$HOME/dart-sdk/bin:$PATH
-#            ./scripts/gen-protoc-gen-dart
-#
-#      - name: Create Pull Request
-#        id: cpr
-#        uses: peter-evans/create-pull-request@v3
-#        with:
-#          title: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
-#          commit-message: "feat(pkg/protoc-gen-dart): update binary on ${{ matrix.os }}"
-#          body: ""
-#          branch: feat/gen-pgd-linux
-#
-#      - name: Check outputs
-#        run: |
-#          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-#          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          architecture: ${{ matrix.runner.arch }}
+
+      - name: Generate Dart files
+        run: ./scripts/gen-protoc-gen-dart
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.arch }}"
+          commit-message: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.arch }}"
+          body: ""
+          branch: feat/gen-pgd-linux-${{ matrix.runner.arch }}
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
