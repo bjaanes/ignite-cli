@@ -129,7 +129,7 @@ jobs:
 
 
   gen-protoc-gen-dart:
-    name: "Generate protoc dart binaries for linux"
+    name: "Generate protoc dart binaries"
     runs-on: ${{ matrix.runner.runs-on }}
     strategy:
       fail-fast: false
