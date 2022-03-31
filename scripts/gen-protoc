@@ -71,7 +71,7 @@ wget -c "$download_url" -O - | tar xzC protobuf --strip-components=1 #skipping f
 # Ok, let's build!
 # Build instructions taken from: https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
 cd protobuf
-./configure --prefix="$outputdir" --disable-shared # Static linked libraries so it works on all machines
+./configure --prefix="$outputdir"
 make clean
 make -j$(nproc)
 make install
