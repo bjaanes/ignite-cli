@@ -29,14 +29,11 @@ jobs:
 
       - run: ./scripts/gen-nodetime
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
         with:
-          title: "feat(pkg/nodetime): update binaries"
-          commit-message: "feat(pkg/nodetime): update binaries"
-          body: "Update the nodetime binaries"
-          branch: feat/gen-nodetime
+          path: ./starport/pkg/nodetime/data
+          key: gen-binaries-nodetime
 
   gen-protoc-linux:
     name: "Generate protoc binaries for linux"
@@ -57,25 +54,26 @@ jobs:
       - name: Build protoc files
         run: ./scripts/gen-protoc
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
         with:
-          title: "feat(pkg/protoc): update binaries linux ${{ matrix.runner.arch }}"
-          commit-message: "feat(pkg/protoc): update binaries linux ${{ matrix.runner.arch }}"
-          body: ""
-          branch: feat/gen-protoc-linux-${{ matrix.runner.arch }}
+          path: ./starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-linux-${{ matrix.runner.arch }}
 
   gen-protoc-darwin:
     name: "Generate protoc binaries for mac/darwin"
     runs-on: [ self-hosted, macOS ]
     defaults:
       run:
-        shell: /usr/bin/arch -arch ${{ matrix.arch }} /bin/bash -l {0}
+        shell: /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}
     strategy:
       fail-fast: false
       matrix:
-        arch: [ arm64e, x86_64 ]
+        runner:
+          - arch-variant: arm64e
+            arch: arm64
+          - arch-variant: x86_64
+            arch: amd64
     steps:
       - uses: actions/checkout@v2
 
@@ -84,14 +82,11 @@ jobs:
       - name: Build protoc files
         run: ./scripts/gen-protoc
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
         with:
-          title: "feat(pkg/protoc): update binaries darwin ${{ matrix.arch }}"
-          commit-message: "feat(pkg/protoc): update binaries darwin ${{ matrix.arch }}"
-          body: ""
-          branch: feat/gen-protoc-darwin-${{ matrix.arch }}
+          path: ./starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-darwin-${{ matrix.runner.arch }}
 
   gen-protoc-gen-dart-linux:
     name: "Generate protoc dart binaries for linux"
@@ -102,8 +97,10 @@ jobs:
         runner:
           - runs-on: ubuntu-latest
             dart-arch: x64
+            arch: amd64
           - runs-on: [self-hosted, linux, arm64]
             dart-arch: arm64
+            arch: amd64
     steps:
       - uses: actions/checkout@v2
 
@@ -114,34 +111,29 @@ jobs:
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.dart-arch }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on linux ${{ matrix.runner.dart-arch }}"
-          body: ""
-          branch: feat/gen-pgd-linux-${{ matrix.runner.dart-arch }}
+          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart-linux-${{ matrix.runner.arch }}
 
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"               
 
   gen-protoc-gen-dart-darwin:
     name: "Generate protoc dart binaries for mac/darwin"
     runs-on: [self-hosted, macOS]
     defaults:
       run:
-        shell: /usr/bin/arch -arch ${{ matrix.runner.arch }} /bin/bash -l {0}
+        shell: /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}
     strategy:
       fail-fast: false
       matrix:
         runner:
-          - arch: arm64e
+          - arch-variant: arm64e
             dart-arch: arm64
-          - arch: x86_64
+            arch: arm64
+          - arch-variant: x86_64
             dart-arch: x64
+            arch: amd64
     steps:
       - uses: actions/checkout@v2
 
@@ -152,14 +144,44 @@ jobs:
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
 
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart-darwin-${{ matrix.runner.arch }}
+
+  gen-pull-request:
+    name: "Create pull request"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get cache for nodetime
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/nodetime/data
+          key: gen-binaries-nodetime
+
+      - name: Get cache for protoc
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/protoc/data
+          key: gen-binaries-protoc-
+
+      - name: Get cache for protoc-gen-dart
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/protoc-gen-dart/data
+          key: gen-binaries-protoc-gen-dart-
+
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.runner.dart-arch }}"
-          commit-message: "feat(pkg/protoc-gen-dart): update binary on darwin ${{ matrix.runner.dart-arch }}"
-          body: ""
-          branch: feat/gen-pgd-darwin-${{ matrix.runner.dart-arch }}
+          title: "feat(binaries): update binaries"
+          commit-message: "feat(binaries): update binaries"
+          body: "See changed files to see which binaries have been updated"
+          branch: feat/gen-binaries
 
       - name: Check outputs
         run: |
