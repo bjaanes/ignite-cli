@@ -72,6 +72,7 @@ wget -c "$download_url" -O - | tar xzC protobuf --strip-components=1 #skipping f
 # Build instructions taken from: https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
 cd protobuf
 ./configure --prefix="$outputdir"
+make clean
 make -j$(nproc)
 make install
 
