@@ -103,7 +103,7 @@ jobs:
             defaults-shell: bash
           - runs-on: [self-hosted, linux, arm64]
             dart-arch: arm64
-            arch: amd64
+            arch: arm64
             os: linux
             defaults-shell: bash
           - runs-on: [self-hosted, macOS]
