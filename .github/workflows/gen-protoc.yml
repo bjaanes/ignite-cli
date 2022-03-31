@@ -24,7 +24,7 @@ jobs:
       - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
 
       - name: Build protoc files
-        run: ./scripts/gen-protoc2
+        run: ./scripts/gen-protoc
 
       - name: Create Pull Request
         id: cpr
@@ -50,7 +50,7 @@ jobs:
       - run: brew install jq autoconf automake libtool
 
       - name: Build protoc files
-        run: ./scripts/gen-protoc2
+        run: ./scripts/gen-protoc
 
       - name: Create Pull Request
         id: cpr
