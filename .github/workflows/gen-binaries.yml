@@ -152,6 +152,7 @@ jobs:
 
   gen-pull-request:
     name: "Create pull request"
+    needs: [gen-nodetime, gen-protoc-linux, gen-protoc-darwin, gen-protoc-gen-dart-linux, gen-protoc-gen-dart-darwin]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
