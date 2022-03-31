@@ -69,6 +69,7 @@ download_url=$(curl -s $gh_protoc_release_url \
 wget -c "$download_url" -O - | tar xzC protobuf --strip-components=1 #skipping first folder
 
 # Ok, let's build!
+# Build instructions taken from: https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
 cd protobuf
 ./configure --prefix="$outputdir"
 make -j$(nproc)
