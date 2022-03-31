@@ -15,7 +15,7 @@ jobs:
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/nodetime/data
+          path: starport/pkg/nodetime/data
           key: gen-binaries-nodetime
 
       - name: Set up QEMU
@@ -52,7 +52,7 @@ jobs:
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
+          path: starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
           key: gen-binaries-protoc-linux-${{ matrix.runner.arch }}
 
       - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
@@ -80,7 +80,7 @@ jobs:
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
+          path: starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
           key: gen-binaries-protoc-darwin-${{ matrix.runner.arch }}
 
       - run: brew install jq autoconf automake libtool
@@ -107,7 +107,7 @@ jobs:
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
           key: gen-binaries-protoc-gen-dart-linux-${{ matrix.runner.arch }}
 
       - uses: dart-lang/setup-dart@v1
@@ -140,7 +140,7 @@ jobs:
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
           key: gen-binaries-protoc-gen-dart-darwin-${{ matrix.runner.arch }}
 
       - uses: dart-lang/setup-dart@v1
@@ -160,19 +160,19 @@ jobs:
       - name: Get cache for nodetime
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/nodetime/data
+          path: starport/pkg/nodetime/data
           key: gen-binaries-nodetime
 
       - name: Get cache for protoc
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc/data
+          path: starport/pkg/protoc/data/*
           key: gen-binaries-protoc-
 
       - name: Get cache for protoc-gen-dart
         uses: actions/cache@v2
         with:
-          path: ./starport/pkg/protoc-gen-dart/data
+          path: starport/pkg/protoc-gen-dart/data/*
           key: gen-binaries-protoc-gen-dart-
 
       - name: Create Pull Request
