@@ -76,7 +76,7 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+          key: gen-protoc-${{ matrix.runner.os }}-${{ matrix.runner.arch }}-${{ github.run_id }}
           path: |
             starport/pkg/protoc/data/protoc-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
             scripts/data/gen-protoc/version-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
@@ -93,28 +93,28 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-linux-amd64
+          key: gen-protoc-linux-amd64-${{ github.run_id }}
           path: |
             starport/pkg/protoc/data/protoc-linux-amd64
             scripts/data/gen-protoc/version-linux-amd64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-linux-arm64
+          key: gen-protoc-linux-arm64-${{ github.run_id }}
           path: |
             starport/pkg/protoc/data/protoc-linux-arm64
             scripts/data/gen-protoc/version-linux-arm64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-darwin-amd64
+          key: gen-protoc-darwin-amd64-${{ github.run_id }}
           path: |
             starport/pkg/protoc/data/protoc-darwin-amd64
             scripts/data/gen-protoc/version-darwin-amd64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-darwin-arm64
+          key: gen-protoc-darwin-arm64-${{ github.run_id }}
           path: |
             starport/pkg/protoc/data/protoc-darwin-arm64
             scripts/data/gen-protoc/version-darwin-arm64
@@ -167,7 +167,7 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-gen-dart-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+          key: gen-protoc-gen-dart-${{ matrix.runner.os }}-${{ matrix.runner.arch }}-${{ github.run_id }}
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_${{ matrix.runner.os }}_${{ matrix.runner.arch }}
 
       - name: Generate Dart files
@@ -182,22 +182,22 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-gen-dart-linux-amd64
+          key: gen-protoc-gen-dart-linux-amd64-${{ github.run_id }}
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_amd64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-gen-dart-linux-arm64
+          key: gen-protoc-gen-dart-linux-arm64-${{ github.run_id }}
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_arm64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-gen-dart-darwin-amd64
+          key: gen-protoc-gen-dart-darwin-amd64-${{ github.run_id }}
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_amd64
 
       - uses: actions/cache@v2
         with:
-          key: gen-protoc-gen-dart-darwin-arm64
+          key: gen-protoc-gen-dart-darwin-arm64-${{ github.run_id }}
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_arm64
 
       - name: Create Pull Request
