@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-linux-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc
 
       - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
 
@@ -81,7 +81,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-darwin-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc
 
       - run: brew install jq autoconf automake libtool
 
@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart-linux-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart
 
       - uses: dart-lang/setup-dart@v1
         with:
@@ -141,7 +141,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart-darwin-${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart
 
       - uses: dart-lang/setup-dart@v1
         with:
@@ -167,13 +167,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc/data/*
-          key: gen-binaries-protoc-
+          key: gen-binaries-protoc
+
 
       - name: Get cache for protoc-gen-dart
         uses: actions/cache@v2
         with:
           path: starport/pkg/protoc-gen-dart/data/*
-          key: gen-binaries-protoc-gen-dart-
+          key: gen-binaries-protoc-gen-dart
 
       - name: Create Pull Request
         id: cpr
