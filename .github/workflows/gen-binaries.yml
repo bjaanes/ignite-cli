@@ -12,12 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/nodetime/data
-          key: gen-binaries-nodetime
-
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v1
@@ -35,8 +29,17 @@ jobs:
 
       - run: ./scripts/gen-nodetime
 
-  gen-protoc-linux:
-    name: "Generate protoc binaries for linux"
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: "feat(nodetime): update binaries"
+          commit-message: "feat(nodetime): update binaries"
+          body: ""
+          branch: feat/gen-nodetime
+
+  gen-protoc:
+    name: "Generate protoc binaries"
     runs-on: ${{ matrix.runner.runs-on }}
     strategy:
       fail-fast: false
@@ -44,51 +47,32 @@ jobs:
         runner:
           - runs-on: ubuntu-latest
             arch: amd64
+            os: linux
           - runs-on: [ self-hosted, linux, arm64 ]
             arch: arm64
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
-          key: gen-binaries-protoc
-
-      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
-
-      - name: Build protoc files
-        run: ./scripts/gen-protoc
-
-  gen-protoc-darwin:
-    name: "Generate protoc binaries for mac/darwin"
-    runs-on: [ self-hosted, macOS ]
+            os: linux
+          - runs-on: [ self-hosted, macOS ]
+            arch: amd64
+            os: osx
+          - runs-on: [ self-hosted, macOS ]
+            os: osx
     defaults:
       run:
-        shell: /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner:
-          - arch-variant: arm64e
-            arch: arm64
-          - arch-variant: x86_64
-            arch: amd64
+        shell: if [[ "${{ matrix.runner.os }} == "osx" ]] ; then /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}; else /bin/bash -l {0};
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
-          key: gen-binaries-protoc
-
-      - run: brew install jq autoconf automake libtool
+      - run: |
+          if [[ "${{ matrix.runner.os }} == "osx" ]]; then
+            brew install jq autoconf automake libtool
+          else
+            sudo apt install -y jq autoconf automake libtool curl make g++ unzip
+          fi
 
       - name: Build protoc files
         run: ./scripts/gen-protoc
 
-  gen-protoc-gen-dart-linux:
+  gen-protoc-gen-dart:
     name: "Generate protoc dart binaries for linux"
     runs-on: ${{ matrix.runner.runs-on }}
     strategy:
@@ -98,50 +82,26 @@ jobs:
           - runs-on: ubuntu-latest
             dart-arch: x64
             arch: amd64
+            os: linux
           - runs-on: [self-hosted, linux, arm64]
             dart-arch: arm64
             arch: amd64
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart
-
-      - uses: dart-lang/setup-dart@v1
-        with:
-          architecture: ${{ matrix.runner.dart-arch }}
-
-      - name: Generate Dart files
-        run: ./scripts/gen-protoc-gen-dart
-
-
-  gen-protoc-gen-dart-darwin:
-    name: "Generate protoc dart binaries for mac/darwin"
-    runs-on: [self-hosted, macOS]
-    defaults:
-      run:
-        shell: /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner:
-          - arch-variant: arm64e
+            os: linux
+          - runs-on: [self-hosted, macOS]
             dart-arch: arm64
             arch: arm64
-          - arch-variant: x86_64
+            arch-variant: arm64e
+            os: osx
+          - runs-on: [self-hosted, macOS]
             dart-arch: x64
             arch: amd64
+            arch-variant: x86_64
+            os: osx
+    defaults:
+      run:
+        shell: if [[ "${{ matrix.runner.os }} == "osx" ]] ; then /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}; else /bin/bash -l {0};
     steps:
       - uses: actions/checkout@v2
-
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart
 
       - uses: dart-lang/setup-dart@v1
         with:
@@ -149,43 +109,3 @@ jobs:
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
-
-  gen-pull-request:
-    name: "Create pull request"
-    needs: [gen-nodetime, gen-protoc-linux, gen-protoc-darwin, gen-protoc-gen-dart-linux, gen-protoc-gen-dart-darwin]
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Get cache for nodetime
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/nodetime/data
-          key: gen-binaries-nodetime
-
-      - name: Get cache for protoc
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc/data/*
-          key: gen-binaries-protoc
-
-
-      - name: Get cache for protoc-gen-dart
-        uses: actions/cache@v2
-        with:
-          path: starport/pkg/protoc-gen-dart/data/*
-          key: gen-binaries-protoc-gen-dart
-
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
-          title: "feat(binaries): update binaries"
-          commit-message: "feat(binaries): update binaries"
-          body: "See changed files to see which binaries have been updated"
-          branch: feat/gen-binaries
-
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
