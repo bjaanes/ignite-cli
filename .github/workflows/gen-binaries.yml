@@ -46,19 +46,20 @@ jobs:
       matrix:
         runner:
           - runs-on: ubuntu-latest
-            arch: amd64
             os: linux
+            defaults-shell: bash
           - runs-on: [ self-hosted, linux, arm64 ]
-            arch: arm64
             os: linux
-          - runs-on: [ self-hosted, macOS ]
-            arch: amd64
-            os: osx
+            defaults-shell: bash
           - runs-on: [ self-hosted, macOS ]
             os: osx
+            defaults-shell: /usr/bin/arch -arch x86_64 /bin/bash -l {0}
+          - runs-on: [ self-hosted, macOS ]
+            os: osx
+            defaults-shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
     defaults:
       run:
-        shell: if [[ "${{ matrix.runner.os }} == "osx" ]] ; then /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}; else /bin/bash -l {0};
+        shell: ${{ matrix.runner.defaults-shell }}
     steps:
       - uses: actions/checkout@v2
 
@@ -83,23 +84,25 @@ jobs:
             dart-arch: x64
             arch: amd64
             os: linux
+            defaults-shell: bash
           - runs-on: [self-hosted, linux, arm64]
             dart-arch: arm64
             arch: amd64
             os: linux
+            defaults-shell: bash
           - runs-on: [self-hosted, macOS]
             dart-arch: arm64
             arch: arm64
-            arch-variant: arm64e
+            defaults-shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
             os: osx
           - runs-on: [self-hosted, macOS]
             dart-arch: x64
             arch: amd64
-            arch-variant: x86_64
+            defaults-shell: /usr/bin/arch -arch x86_64 /bin/bash -l {0}
             os: osx
     defaults:
       run:
-        shell: if [[ "${{ matrix.runner.os }} == "osx" ]] ; then /usr/bin/arch -arch ${{ matrix.runner.arch-variant }} /bin/bash -l {0}; else /bin/bash -l {0};
+        shell: ${{ matrix.runner.defaults-shell }}
     steps:
       - uses: actions/checkout@v2
 
