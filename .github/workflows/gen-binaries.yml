@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/nodetime/data
+          key: gen-binaries-nodetime
+
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v1
@@ -29,12 +35,6 @@ jobs:
 
       - run: ./scripts/gen-nodetime
 
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: ./starport/pkg/nodetime/data
-          key: gen-binaries-nodetime
-
   gen-protoc-linux:
     name: "Generate protoc binaries for linux"
     runs-on: ${{ matrix.runner.runs-on }}
@@ -49,16 +49,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
-
-      - name: Build protoc files
-        run: ./scripts/gen-protoc
-
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
           path: ./starport/pkg/protoc/data/protoc-linux-${{ matrix.runner.arch }}
           key: gen-binaries-protoc-linux-${{ matrix.runner.arch }}
+
+      - run: sudo apt install -y jq autoconf automake libtool curl make g++ unzip
+
+      - name: Build protoc files
+        run: ./scripts/gen-protoc
 
   gen-protoc-darwin:
     name: "Generate protoc binaries for mac/darwin"
@@ -77,16 +77,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: brew install jq autoconf automake libtool
-
-      - name: Build protoc files
-        run: ./scripts/gen-protoc
-
       - name: Cache output for common pull-request job
         uses: actions/cache@v2
         with:
           path: ./starport/pkg/protoc/data/protoc-darwin-${{ matrix.runner.arch }}
           key: gen-binaries-protoc-darwin-${{ matrix.runner.arch }}
+
+      - run: brew install jq autoconf automake libtool
+
+      - name: Build protoc files
+        run: ./scripts/gen-protoc
 
   gen-protoc-gen-dart-linux:
     name: "Generate protoc dart binaries for linux"
@@ -104,18 +104,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart-linux-${{ matrix.runner.arch }}
+
       - uses: dart-lang/setup-dart@v1
         with:
           architecture: ${{ matrix.runner.dart-arch }}
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
-
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart-linux-${{ matrix.runner.arch }}
 
 
   gen-protoc-gen-dart-darwin:
@@ -137,18 +137,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Cache output for common pull-request job
+        uses: actions/cache@v2
+        with:
+          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
+          key: gen-binaries-protoc-gen-dart-darwin-${{ matrix.runner.arch }}
+
       - uses: dart-lang/setup-dart@v1
         with:
           architecture: ${{ matrix.runner.dart-arch }}
 
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
-
-      - name: Cache output for common pull-request job
-        uses: actions/cache@v2
-        with:
-          path: ./starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_${{ matrix.runner.arch }}
-          key: gen-binaries-protoc-gen-dart-darwin-${{ matrix.runner.arch }}
 
   gen-pull-request:
     name: "Create pull request"
