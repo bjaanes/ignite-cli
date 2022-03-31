@@ -48,15 +48,19 @@ jobs:
           - runs-on: ubuntu-latest
             os: linux
             defaults-shell: bash
+            arch: amd64
           - runs-on: [ self-hosted, linux, arm64 ]
             os: linux
             defaults-shell: bash
+            arch: arm64
           - runs-on: [ self-hosted, macOS ]
-            os: osx
+            os: darwin
             defaults-shell: /usr/bin/arch -arch x86_64 /bin/bash -l {0}
+            arch: amd64
           - runs-on: [ self-hosted, macOS ]
-            os: osx
+            os: darwin
             defaults-shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
+            arch: arm64
     defaults:
       run:
         shell: ${{ matrix.runner.defaults-shell }}
@@ -64,14 +68,64 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: |
-          if [[ "${{ matrix.runner.os }} == "osx" ]]; then
+          if [[ "${{ matrix.runner.os }}" == "darwin" ]]; then
             brew install jq autoconf automake libtool
           else
             sudo apt install -y jq autoconf automake libtool curl make g++ unzip
           fi
 
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+          path: |
+            starport/pkg/protoc/data/protoc-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+            scripts/data/gen-protoc/version-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+
       - name: Build protoc files
         run: ./scripts/gen-protoc
+
+  gen-protoc-pull-request:
+    name: "Pull request for protoc binaries"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-linux-amd64
+          path: |
+            starport/pkg/protoc/data/protoc-linux-amd64
+            scripts/data/gen-protoc/version-linux-amd64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-linux-arm64
+          path: |
+            starport/pkg/protoc/data/protoc-linux-arm64
+            scripts/data/gen-protoc/version-linux-arm64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-darwin-amd64
+          path: |
+            starport/pkg/protoc/data/protoc-darwin-amd64
+            scripts/data/gen-protoc/version-darwin-amd64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-darwin-arm64
+          path: |
+            starport/pkg/protoc/data/protoc-darwin-arm64
+            scripts/data/gen-protoc/version-darwin-arm64
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: "feat(protoc): update binaries"
+          commit-message: "feat(protoc): update binaries"
+          body: ""
+          branch: feat/gen-protoc
+
 
   gen-protoc-gen-dart:
     name: "Generate protoc dart binaries for linux"
@@ -94,12 +148,12 @@ jobs:
             dart-arch: arm64
             arch: arm64
             defaults-shell: /usr/bin/arch -arch arm64e /bin/bash -l {0}
-            os: osx
+            os: darwin
           - runs-on: [self-hosted, macOS]
             dart-arch: x64
             arch: amd64
             defaults-shell: /usr/bin/arch -arch x86_64 /bin/bash -l {0}
-            os: osx
+            os: darwin
     defaults:
       run:
         shell: ${{ matrix.runner.defaults-shell }}
@@ -110,5 +164,45 @@ jobs:
         with:
           architecture: ${{ matrix.runner.dart-arch }}
 
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-gen-dart-${{ matrix.runner.os }}-${{ matrix.runner.arch }}
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_${{ matrix.runner.os }}_${{ matrix.runner.arch }}
+
       - name: Generate Dart files
         run: ./scripts/gen-protoc-gen-dart
+
+  gen-protoc-gen-dart-pull-request:
+    name: "Pull request for protoc dart binaries"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-gen-dart-linux-amd64
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_amd64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-gen-dart-linux-arm64
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_linux_arm64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-gen-dart-darwin-amd64
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_amd64
+
+      - uses: actions/cache@v2
+        with:
+          key: gen-protoc-gen-dart-darwin-arm64
+          path: starport/pkg/protoc-gen-dart/data/protoc-gen-dart_darwin_arm64
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: "feat(protoc-gen-dart): update binaries"
+          commit-message: "feat(protoc-gen-dart): update binaries"
+          body: ""
+          branch: feat/gen-protoc-gen-dart
+
