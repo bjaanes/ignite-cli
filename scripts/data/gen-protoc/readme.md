@@ -1,8 +1,23 @@
 # Gen protoc
 
-https://github.com/protocolbuffers/protobuf/issues/9397
+## Some background on the current approach
+Currently, the protocolbuffers/protobuf binaries are only building releases for linux-amd64, linux-arm64 and osx-amd64.
 
-The following script can be used in its place
+There is an issue on their repo that seems to suggest that osx-arm64 builds are coming soon: https://github.com/protocolbuffers/protobuf/issues/9397
+
+When prebuilt binaries exist, we can use the script outlined at the bottom of this file instead of the current version (scripts/gen-protoc)
+
+Until then, the current script downloads the latest version and builds from source. This is triggered in the .github/workflows/gen_protoc.yml file (4 separate jobs, one for each architecture combination)
+
+## Versions
+
+This folder has 4 files that are used to keep track of which version was the latest to be built. This is done to not have to rebuild (which is slow) binaries every time. 
+
+The binaries are also non-deterministic (in that they get different file hashes every time you build), so building them on push or a schedule would produce new PR's every time.
+
+# The script we can use later:
+
+As mentioned above, when the osx-arm64 binary is being released, we can simplify our approach significantly by having a single job in .github/workflows/gen_protoc.yml that uses the script below:
 ```bash
 #!/bin/bash
 
