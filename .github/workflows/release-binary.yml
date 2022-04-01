@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       working-directory: go/src/github.com/tendermint/starport
-
+    
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
