@@ -7,6 +7,7 @@ on:
     branches:
       - master
       - develop
+      - issue-2130 # TODO: Remove
 
 jobs:
   pre-test:
