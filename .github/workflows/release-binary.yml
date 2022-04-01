@@ -1,15 +1,14 @@
 name: Release Binaries
 
 on:
-  workflow_dispatch: # TODO Change back
-  #  release:
-  #    types: [ published ]
+  release:
+    types: [ published ]
 
 jobs:
   binary:
     runs-on: ubuntu-latest
     env:
-      working-directory: go/src/github.com/bjaanes/starport # TODO Change back
+      working-directory: go/src/github.com/tendermint/starport
 
     steps:
       - name: Set up Go
@@ -23,11 +22,11 @@ jobs:
           path: ${{ env.working-directory }}
           fetch-depth: 0
 
-      - name: Run GoReleaser # TODO Remember to change back the .goreleaser.yml github.com/bjaanes... stuff
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           workdir: ${{ env.working-directory }}
           version: latest
           args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # TODO Change back
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

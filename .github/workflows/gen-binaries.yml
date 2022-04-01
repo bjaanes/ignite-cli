@@ -1,9 +1,9 @@
-name: Generate binaries
+name: Generate embedded binaries
 
 on:
   push:
     branches:
-      - issue-2130 # Change back to develop
+      - develop
 
 jobs:
   gen-nodetime:

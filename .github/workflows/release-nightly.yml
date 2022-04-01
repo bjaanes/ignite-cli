@@ -3,14 +3,13 @@ name: Release nightly
 on:
   push:
     branches:
-      - issue-2130 # TODO Change back to develop
-    #      - develop
+      - develop
 
 jobs:
   release-nightly:
     runs-on: ubuntu-latest
     env:
-      working-directory: go/src/github.com/bjaanes/starport # TODO Change back
+      working-directory: go/src/github.com/tendermint/starport
 
     steps:
       - uses: actions/checkout@v2
@@ -49,7 +48,7 @@ jobs:
           path: ${{ env.working-directory }}
           fetch-depth: 0
 
-      - name: Run GoReleaser # TODO Remember to change back the .goreleaser.yml github.com/bjaanes... stuff
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
           workdir: ${{ env.working-directory }}
@@ -59,5 +58,4 @@ jobs:
           version: v0.157.0
           args: release --rm-dist --skip-validate -f .goreleaser.nightly.yml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # TODO Change back
-          #GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
