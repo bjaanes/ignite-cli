@@ -556,6 +556,7 @@ ignite relayer configure [flags]
   -h, --help                     help for configure
       --keyring-backend string   Keyring backend to store your account keys (default "test")
       --ordered                  Set the channel as ordered
+  -r, --reset                    Reset the relayer config
       --source-account string    Source Account
       --source-faucet string     Faucet address of the source chain
       --source-gaslimit int      Gas limit used for transactions on source chain
