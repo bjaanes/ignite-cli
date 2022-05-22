@@ -3,15 +3,16 @@ package node_test
 import (
 	"bytes"
 	"context"
-	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/stretchr/testify/require"
+
+	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	envtest "github.com/ignite-hq/cli/integration"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNodeTxBankSend(t *testing.T) {

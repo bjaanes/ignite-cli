@@ -30,7 +30,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 	var (
 		inputAccount   = args[0]
 		prefix         = getAddressPrefix(cmd)
-		node           = getRpc(cmd)
+		node           = getRPC(cmd)
 		home           = getHome(cmd)
 		keyringBackend = getKeyringBackend(cmd)
 	)

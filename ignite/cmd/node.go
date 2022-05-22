@@ -24,7 +24,7 @@ func NewNode() *cobra.Command {
 	return c
 }
 
-func getRpc(cmd *cobra.Command) (rpc string) {
+func getRPC(cmd *cobra.Command) (rpc string) {
 	rpc, _ = cmd.Flags().GetString(rpcFlag)
 	return
 }

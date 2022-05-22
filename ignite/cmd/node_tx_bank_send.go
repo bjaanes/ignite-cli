@@ -2,6 +2,7 @@ package ignitecmd
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ignite-hq/cli/ignite/pkg/cliui"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosclient"
@@ -33,7 +34,7 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		prefix           = getAddressPrefix(cmd)
 		keyringBackend   = getKeyringBackend(cmd)
 		from             = getFrom(cmd)
-		node             = getRpc(cmd)
+		node             = getRPC(cmd)
 	)
 
 	session := cliui.New()
@@ -75,6 +76,9 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 	}
 
 	coins, err := sdk.ParseCoinsNormalized(amount)
+	if err != nil {
+		return err
+	}
 
 	if err := client.BankSend(fromAddress, toAddress, coins, from); err != nil {
 		return err

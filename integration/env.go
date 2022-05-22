@@ -5,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	"io"
 	"os"
 	"path"
@@ -16,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,6 +23,7 @@ import (
 	"github.com/ignite-hq/cli/ignite/pkg/availableport"
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner"
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
+	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosfaucet"
 	"github.com/ignite-hq/cli/ignite/pkg/gocmd"
 	"github.com/ignite-hq/cli/ignite/pkg/httpstatuschecker"
@@ -290,7 +290,7 @@ func (e Env) AccountsInKeyring(homePath string, keyringBackend cosmosaccount.Key
 		keyringBackend = keyring.BackendTest
 	}
 	registry, err := cosmosaccount.New(
-		cosmosaccount.WithKeyringBackend(keyring.BackendTest),
+		cosmosaccount.WithKeyringBackend(keyringBackend),
 		cosmosaccount.WithHome(homePath),
 	)
 	require.NoError(e.t, err)

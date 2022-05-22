@@ -3,15 +3,16 @@ package node_test
 import (
 	"bytes"
 	"context"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
-	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	"strings"
 	"testing"
 	"time"
 
-	envtest "github.com/ignite-hq/cli/integration"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
+	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
+	envtest "github.com/ignite-hq/cli/integration"
 )
 
 const testPrefix = "testpref"
