@@ -1,0 +1,30 @@
+package ignitecmd
+
+import "github.com/spf13/cobra"
+
+var rpcAddress string
+
+const (
+	rpcFlag         = "rpc"
+	rpcAddressLocal = "tcp://localhost:26657"
+)
+
+func NewNode() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "node [command]",
+		Short: "Make calls to a live blockchain node",
+		Args:  cobra.ExactArgs(1),
+	}
+
+	c.PersistentFlags().StringVar(&rpcAddress, rpcFlag, rpcAddressLocal, "<host>:<port> to tendermint rpc interface for this chain")
+
+	c.AddCommand(NewNodeQuery())
+	c.AddCommand(NewNodeTx())
+
+	return c
+}
+
+func getRpc(cmd *cobra.Command) (rpc string) {
+	rpc, _ = cmd.Flags().GetString(rpcFlag)
+	return
+}

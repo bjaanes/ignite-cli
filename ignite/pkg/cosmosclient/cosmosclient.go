@@ -3,9 +3,9 @@ package cosmosclient
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,18 +27,13 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
-	commitmenttypes "github.com/cosmos/ibc-go/v2/modules/core/23-commitment/types"
 	"github.com/gogo/protobuf/proto"
 	prototypes "github.com/gogo/protobuf/types"
-	"github.com/pkg/errors"
-	"github.com/tendermint/tendermint/libs/bytes"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosfaucet"
+	"github.com/pkg/errors"
+	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // FaucetTransferEnsureDuration is the duration that BroadcastTx will wait when a faucet transfer
@@ -208,6 +203,40 @@ func (c Client) Address(accountName string) (sdktypes.AccAddress, error) {
 	return account.Info.GetAddress(), nil
 }
 
+func (c Client) AccountExists(accountName string) (bool, error) {
+	_, err := c.Account(accountName)
+	var accErr *cosmosaccount.AccountDoesNotExistError
+	errNotFound := errors.As(err, &accErr)
+	if errNotFound {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// Bech32Address returns the bech32 address, with the correct prefix, from account name or address.
+func (c Client) Bech32Address(accountNameOrAddress string) (string, error) {
+	unlockFn := c.lockBech32Prefix()
+	defer unlockFn()
+
+	_, _, err := bech32.DecodeAndConvert(accountNameOrAddress)
+	if err == nil {
+		// Already bech32
+		return accountNameOrAddress, nil
+	}
+
+	account, err := c.Account(accountNameOrAddress)
+	if err != nil {
+		return "", err
+	}
+
+	return account.Address(c.addressPrefix), nil
+}
+
 func (c Client) Context() client.Context {
 	return c.context
 }
@@ -251,60 +280,6 @@ func (r Response) Decode(message proto.Message) error {
 	}, message)
 }
 
-// ConsensusInfo is the validator consensus info
-type ConsensusInfo struct {
-	Timestamp          string                `json:"Timestamp"`
-	Root               string                `json:"Root"`
-	NextValidatorsHash string                `json:"NextValidatorsHash"`
-	ValidatorSet       *tmproto.ValidatorSet `json:"ValidatorSet"`
-}
-
-// ConsensusInfo returns the appropriate tendermint consensus state by given height
-// and the validator set for the next height
-func (c Client) ConsensusInfo(ctx context.Context, height int64) (ConsensusInfo, error) {
-	node, err := c.Context().GetNode()
-	if err != nil {
-		return ConsensusInfo{}, err
-	}
-
-	commit, err := node.Commit(ctx, &height)
-	if err != nil {
-		return ConsensusInfo{}, err
-	}
-
-	var (
-		page  = 1
-		count = 10_000
-	)
-	validators, err := node.Validators(ctx, &height, &page, &count)
-	if err != nil {
-		return ConsensusInfo{}, err
-	}
-
-	protoValset, err := tmtypes.NewValidatorSet(validators.Validators).ToProto()
-	if err != nil {
-		return ConsensusInfo{}, err
-	}
-
-	heightNext := height + 1
-	validatorsNext, err := node.Validators(ctx, &heightNext, &page, &count)
-	if err != nil {
-		return ConsensusInfo{}, err
-	}
-
-	var (
-		hash = tmtypes.NewValidatorSet(validatorsNext.Validators).Hash()
-		root = commitmenttypes.NewMerkleRoot(commit.AppHash)
-	)
-
-	return ConsensusInfo{
-		Timestamp:          commit.Time.Format(time.RFC3339Nano),
-		NextValidatorsHash: bytes.HexBytes(hash).String(),
-		Root:               base64.StdEncoding.EncodeToString(root.Hash),
-		ValidatorSet:       protoValset,
-	}, nil
-}
-
 // Status returns the node status
 func (c Client) Status(ctx context.Context) (*ctypes.ResultStatus, error) {
 	return c.RPC.Status(ctx)
@@ -322,6 +297,21 @@ func (c Client) BroadcastTx(accountName string, msgs ...sdktypes.Msg) (Response,
 // protects sdktypes.Config.
 var mconf sync.Mutex
 
+func (c Client) lockBech32Prefix() (unlockFn func()) {
+	mconf.Lock()
+	config := sdktypes.GetConfig()
+	config.SetBech32PrefixForAccount(c.addressPrefix, c.addressPrefix+"pub")
+
+	return mconf.Unlock
+}
+
+func performQuery[T any](c Client, q func() (T, error)) (T, error) {
+	unlockFn := c.lockBech32Prefix()
+	defer unlockFn()
+
+	return q()
+}
+
 func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Msg) (
 	gas uint64, broadcast func() (Response, error), err error) {
 	if err := c.prepareBroadcast(context.Background(), accountName, msgs); err != nil {
@@ -329,10 +319,8 @@ func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Ms
 	}
 
 	// TODO find a better way if possible.
-	mconf.Lock()
-	defer mconf.Unlock()
-	config := sdktypes.GetConfig()
-	config.SetBech32PrefixForAccount(c.addressPrefix, c.addressPrefix+"pub")
+	unlockFn := c.lockBech32Prefix()
+	defer unlockFn()
 
 	accountAddress, err := c.Address(accountName)
 	if err != nil {
