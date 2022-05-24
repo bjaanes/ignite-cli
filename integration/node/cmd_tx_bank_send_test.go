@@ -11,19 +11,21 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
-	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	envtest "github.com/ignite-hq/cli/integration"
 )
 
 func TestNodeTxBankSend(t *testing.T) {
 	var (
-		env     = envtest.New(t)
-		path    = env.Scaffold("github.com/test/blog", "--address-prefix", testPrefix)
-		servers = env.RandomizeServerPorts(path, "")
-		homeDir = env.SetRandomHomeConfig(path, "")
+		env           = envtest.New(t)
+		path          = env.Scaffold("github.com/test/blog", "--address-prefix", testPrefix)
+		servers       = env.RandomizeServerPorts(path, "")
+		rndWorkdir    = t.TempDir() // To make sure we can run these commands from anywhere
+		accKeyringDir = t.TempDir()
 	)
 
-	env.SetKeyringBackend(keyring.BackendTest, path, "")
+	env.SetKeyringBackend(path, "", keyring.BackendTest)
+	env.SetConfigMnemonic(path, "", "alice", aliceMnemonic)
+	env.SetConfigMnemonic(path, "", "bob", bobMnemonic)
 
 	var (
 		ctx, cancel = context.WithTimeout(env.Ctx(), envtest.ServeTimeout)
@@ -37,18 +39,16 @@ func TestNodeTxBankSend(t *testing.T) {
 		// error "account doesn't have any balances" occurs if a sleep is not included
 		time.Sleep(time.Second * 1)
 
-		accounts := env.AccountsInKeyring(homeDir, cosmosaccount.KeyringTest, testPrefix)
-		var alice envtest.Account
-		var bob envtest.Account
-		for _, acc := range accounts {
-			if acc.Name == "alice" {
-				alice = acc
-			}
-			if acc.Name == "bob" {
-				bob = acc
-				break
-			}
-		}
+		env.Must(env.Exec("import alice",
+			step.NewSteps(step.New(
+				step.Exec(envtest.IgniteApp, "account", "import", "alice", "--keyring-dir", accKeyringDir, "--non-interactive", "--secret", aliceMnemonic),
+			)),
+		))
+		env.Must(env.Exec("import bob",
+			step.NewSteps(step.New(
+				step.Exec(envtest.IgniteApp, "account", "import", "bob", "--keyring-dir", accKeyringDir, "--non-interactive", "--secret", bobMnemonic),
+			)),
+		))
 
 		env.Must(env.Exec("send 100token from alice to bob",
 			step.NewSteps(step.New(
@@ -65,12 +65,12 @@ func TestNodeTxBankSend(t *testing.T) {
 					"alice",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 		))
 
@@ -82,19 +82,19 @@ func TestNodeTxBankSend(t *testing.T) {
 					"tx",
 					"bank",
 					"send",
-					bob.Address,
-					alice.Address,
+					bobAddress,
+					aliceAddress,
 					"2stake",
 					"--from",
 					"bob",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 		))
 
@@ -107,18 +107,18 @@ func TestNodeTxBankSend(t *testing.T) {
 					"bank",
 					"send",
 					"alice",
-					bob.Address,
+					bobAddress,
 					"5token",
 					"--from",
 					"alice",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 		))
 
@@ -136,12 +136,12 @@ func TestNodeTxBankSend(t *testing.T) {
 					"alice",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecStdout(aliceBalanceCheckBuffer),
 		))
@@ -161,12 +161,12 @@ func TestNodeTxBankSend(t *testing.T) {
 					"bob",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecStdout(bobBalanceCheckBuffer),
 		))

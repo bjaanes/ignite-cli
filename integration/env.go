@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +22,6 @@ import (
 	"github.com/ignite-hq/cli/ignite/pkg/availableport"
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner"
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
-	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosfaucet"
 	"github.com/ignite-hq/cli/ignite/pkg/gocmd"
 	"github.com/ignite-hq/cli/ignite/pkg/httpstatuschecker"
@@ -283,9 +281,10 @@ func (e Env) IsFaucetServed(ctx context.Context, faucetClient cosmosfaucet.HTTPC
 type Account struct {
 	Name    string
 	Address string
+	Secret  string
 }
 
-func (e Env) AccountsInKeyring(homePath string, keyringBackend cosmosaccount.KeyringBackend, prefix string) []Account {
+/*func (e Env) AccountsInKeyring(homePath string, keyringBackend cosmosaccount.KeyringBackend, prefix string) []Account {
 	if keyringBackend == "" {
 		keyringBackend = keyring.BackendTest
 	}
@@ -300,14 +299,17 @@ func (e Env) AccountsInKeyring(homePath string, keyringBackend cosmosaccount.Key
 
 	var accounts []Account
 	for _, a := range registryList {
+		secret, err := registry.ExportHex(a.Name, "")
+		require.NoError(e.t, err)
 		accounts = append(accounts, Account{
 			Name:    a.Name,
 			Address: a.Address(prefix),
+			Secret:  secret,
 		})
 	}
 
 	return accounts
-}
+}*/
 
 // TmpDir creates a new temporary directory.
 func (e Env) TmpDir() (path string) {
@@ -317,11 +319,30 @@ func (e Env) TmpDir() (path string) {
 	return path
 }
 
-func (e Env) SetKeyringBackend(keyringBackend string, path string, configFile string) {
+func (e Env) SetKeyringBackend(path string, configFile string, keyringBackend string) {
 	configyml, conf := e.openConfig(path, configFile)
 	defer configyml.Close()
 
 	conf.Init.KeyringBackend = keyringBackend
+	e.saveConfig(configyml, conf)
+}
+func (e Env) SetConfigMnemonic(path string, configFile string, accountName string, mnemonic string) {
+	configyml, conf := e.openConfig(path, configFile)
+	defer configyml.Close()
+
+	found := false
+	for i, acc := range conf.Accounts {
+		if acc.Name == accountName {
+			conf.Accounts[i].Mnemonic = mnemonic
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		e.t.FailNow()
+	}
+
 	e.saveConfig(configyml, conf)
 }
 

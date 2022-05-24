@@ -18,9 +18,10 @@ func NewNodeQueryBankBalances() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 
+	c.Flags().AddFlagSet(flagSetHome())
 	c.Flags().AddFlagSet(flagSetAccountPrefixes())
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
-	c.Flags().AddFlagSet(flagSetHome())
+	c.Flags().AddFlagSet(flagSetAccountKeyringDir())
 	sdkflags.AddPaginationFlagsToCmd(c, "all balances")
 
 	return c
@@ -33,6 +34,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 		node           = getRPC(cmd)
 		home           = getHome(cmd)
 		keyringBackend = getKeyringBackend(cmd)
+		keyringDir     = getKeyringDir(cmd)
 	)
 	session := cliui.New()
 	defer session.Cleanup()
@@ -42,6 +44,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 		cosmosclient.WithAddressPrefix(prefix),
 		cosmosclient.WithHome(home),
 		cosmosclient.WithKeyringBackend(keyringBackend),
+		cosmosclient.WithKeyringDir(keyringDir),
 		cosmosclient.WithNodeAddress(node),
 	)
 	if err != nil {

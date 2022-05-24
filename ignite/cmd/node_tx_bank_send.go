@@ -17,9 +17,10 @@ func NewNodeTxBankSend() *cobra.Command {
 		Args:  cobra.ExactArgs(3),
 	}
 
+	c.Flags().AddFlagSet(flagSetHome())
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
 	c.Flags().AddFlagSet(flagSetAccountPrefixes())
-	c.Flags().AddFlagSet(flagSetHome())
+	c.Flags().AddFlagSet(flagSetAccountKeyringDir())
 	c.Flags().AddFlagSet(flagTxFrom())
 
 	return c
@@ -32,9 +33,10 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		amount           = args[2]
 		home             = getHome(cmd)
 		prefix           = getAddressPrefix(cmd)
-		keyringBackend   = getKeyringBackend(cmd)
 		from             = getFrom(cmd)
 		node             = getRPC(cmd)
+		keyringBackend   = getKeyringBackend(cmd)
+		keyringDir       = getKeyringDir(cmd)
 	)
 
 	session := cliui.New()
@@ -46,6 +48,7 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		cosmosclient.WithAddressPrefix(prefix),
 		cosmosclient.WithHome(home),
 		cosmosclient.WithKeyringBackend(keyringBackend),
+		cosmosclient.WithKeyringDir(keyringDir),
 		cosmosclient.WithNodeAddress(node),
 	)
 	if err != nil {

@@ -82,6 +82,7 @@ type Client struct {
 	homePath           string
 	keyringServiceName string
 	keyringBackend     cosmosaccount.KeyringBackend
+	keyringDir         string
 }
 
 // Option configures your client.
@@ -108,6 +109,13 @@ func WithKeyringServiceName(name string) Option {
 func WithKeyringBackend(backend cosmosaccount.KeyringBackend) Option {
 	return func(c *Client) {
 		c.keyringBackend = backend
+	}
+}
+
+// WithKeyringDir sets the directory of the keyring. By default, it uses cosmosaccount.KeyringHome
+func WithKeyringDir(keyringDir string) Option {
+	return func(c *Client) {
+		c.keyringDir = keyringDir
 	}
 }
 
@@ -175,10 +183,14 @@ func New(ctx context.Context, options ...Option) (Client, error) {
 		c.homePath = filepath.Join(home, "."+c.chainID)
 	}
 
+	if c.keyringDir == "" {
+		c.keyringDir = c.homePath
+	}
+
 	c.AccountRegistry, err = cosmosaccount.New(
 		cosmosaccount.WithKeyringServiceName(c.keyringServiceName),
 		cosmosaccount.WithKeyringBackend(c.keyringBackend),
-		cosmosaccount.WithHome(c.homePath),
+		cosmosaccount.WithKeyringDir(c.keyringDir),
 	)
 	if err != nil {
 		return Client{}, err

@@ -11,21 +11,27 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ignite-hq/cli/ignite/pkg/cmdrunner/step"
-	"github.com/ignite-hq/cli/ignite/pkg/cosmosaccount"
 	envtest "github.com/ignite-hq/cli/integration"
 )
 
 const testPrefix = "testpref"
+const aliceMnemonic = "trade physical mention claw forum fork night rate distance steak monster among soldier custom cave cloud addict runway melody current witness destroy version forward"
+const aliceAddress = "testpref148akaazpnhce4gjcxy8l59969dtaxxrceju4m6"
+const bobMnemonic = "alcohol alert unknown tissue clap basic slide air treat liquid proof toward outdoor loyal depart toddler cabbage glimpse warm outer switch output theme try"
+const bobAddress = "testpref1nrzh528qngagy6vzgt2yc8p9quv8adjxn7rk65"
 
 func TestNodeQueryBankBalances(t *testing.T) {
 	var (
-		env     = envtest.New(t)
-		path    = env.Scaffold("github.com/test/blog", "--address-prefix", testPrefix)
-		servers = env.RandomizeServerPorts(path, "")
-		homeDir = env.SetRandomHomeConfig(path, "")
+		env           = envtest.New(t)
+		path          = env.Scaffold("github.com/test/blog", "--address-prefix", testPrefix)
+		servers       = env.RandomizeServerPorts(path, "")
+		rndWorkdir    = t.TempDir() // To make sure we can run these commands from anywhere
+		accKeyringDir = t.TempDir()
 	)
 
-	env.SetKeyringBackend(keyring.BackendTest, path, "")
+	env.SetKeyringBackend(path, "", keyring.BackendTest)
+	env.SetConfigMnemonic(path, "", "alice", aliceMnemonic)
+	env.SetConfigMnemonic(path, "", "bob", bobMnemonic)
 
 	var (
 		ctx, cancel = context.WithTimeout(env.Ctx(), envtest.ServeTimeout)
@@ -39,14 +45,16 @@ func TestNodeQueryBankBalances(t *testing.T) {
 		// error "account doesn't have any balances" occurs if a sleep is not included
 		time.Sleep(time.Second * 1)
 
-		accounts := env.AccountsInKeyring(homeDir, cosmosaccount.KeyringTest, testPrefix)
-		var alice envtest.Account
-		for _, acc := range accounts {
-			if acc.Name == "alice" {
-				alice = acc
-				break
-			}
-		}
+		env.Must(env.Exec("import alice",
+			step.NewSteps(step.New(
+				step.Exec(envtest.IgniteApp, "account", "import", "alice", "--keyring-dir", accKeyringDir, "--non-interactive", "--secret", aliceMnemonic),
+			)),
+		))
+		env.Must(env.Exec("import bob",
+			step.NewSteps(step.New(
+				step.Exec(envtest.IgniteApp, "account", "import", "bob", "--keyring-dir", accKeyringDir, "--non-interactive", "--secret", bobMnemonic),
+			)),
+		))
 
 		var accountOutputBuffer = &bytes.Buffer{}
 		env.Must(env.Exec("query bank balances",
@@ -60,12 +68,12 @@ func TestNodeQueryBankBalances(t *testing.T) {
 					"alice",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecStdout(accountOutputBuffer),
 		))
@@ -82,15 +90,15 @@ func TestNodeQueryBankBalances(t *testing.T) {
 					"query",
 					"bank",
 					"balances",
-					alice.Address,
+					aliceAddress,
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecStdout(addressOutputBuffer),
 		))
@@ -109,12 +117,12 @@ func TestNodeQueryBankBalances(t *testing.T) {
 					"nonexistentaccount",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecShouldError(),
 		))
@@ -130,12 +138,12 @@ func TestNodeQueryBankBalances(t *testing.T) {
 					testPrefix+"1gspvt8qsk8cryrsxnqt452cjczjm5ejdgla24e",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 					"--address-prefix",
 					testPrefix,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecShouldError(),
 		))
@@ -151,10 +159,10 @@ func TestNodeQueryBankBalances(t *testing.T) {
 					"alice",
 					"--rpc",
 					"http://"+servers.RPC,
-					"--home",
-					homeDir,
+					"--keyring-dir",
+					accKeyringDir,
 				),
-				step.Workdir(path),
+				step.Workdir(rndWorkdir),
 			)),
 			envtest.ExecShouldError(),
 		))
