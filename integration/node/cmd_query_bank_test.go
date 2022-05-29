@@ -106,6 +106,64 @@ func TestNodeQueryBankBalances(t *testing.T) {
 100000000 	stake 	
 20000 		token`))
 
+		var paginationFirstPageOutput = &bytes.Buffer{}
+		env.Must(env.Exec("query bank balances with pagination",
+			step.NewSteps(step.New(
+				step.Exec(
+					envtest.IgniteApp,
+					"node",
+					"query",
+					"bank",
+					"balances",
+					"alice",
+					"--rpc",
+					"http://"+servers.RPC,
+					"--keyring-dir",
+					accKeyringDir,
+					"--address-prefix",
+					testPrefix,
+					"--limit",
+					"1",
+					"--page",
+					"1",
+				),
+				step.Workdir(rndWorkdir),
+			)),
+			envtest.ExecStdout(paginationFirstPageOutput),
+		))
+		require.True(t, strings.Contains(paginationFirstPageOutput.String(), `Amount 		Denom 	
+100000000 	stake`))
+		require.False(t, strings.Contains(paginationFirstPageOutput.String(), `token`))
+
+		var paginationSecondPageOutput = &bytes.Buffer{}
+		env.Must(env.Exec("query bank balances with pagination",
+			step.NewSteps(step.New(
+				step.Exec(
+					envtest.IgniteApp,
+					"node",
+					"query",
+					"bank",
+					"balances",
+					"alice",
+					"--rpc",
+					"http://"+servers.RPC,
+					"--keyring-dir",
+					accKeyringDir,
+					"--address-prefix",
+					testPrefix,
+					"--limit",
+					"1",
+					"--page",
+					"2",
+				),
+				step.Workdir(rndWorkdir),
+			)),
+			envtest.ExecStdout(paginationSecondPageOutput),
+		))
+		require.True(t, strings.Contains(paginationSecondPageOutput.String(), `Amount 	Denom 	
+20000 	token`))
+		require.False(t, strings.Contains(paginationSecondPageOutput.String(), `stake`))
+
 		env.Must(env.Exec("query bank balances fail with non-existent account name",
 			step.NewSteps(step.New(
 				step.Exec(
