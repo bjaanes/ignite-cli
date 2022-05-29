@@ -3,7 +3,6 @@ package ignitecmd
 import (
 	"fmt"
 
-	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/ignite-hq/cli/ignite/pkg/cliui"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosclient"
 	"github.com/spf13/cobra"
@@ -55,7 +54,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	pagination, err := sdkclient.ReadPageRequest(cmd.Flags())
+	pagination, err := getPagination(cmd)
 	if err != nil {
 		return err
 	}

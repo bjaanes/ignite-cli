@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -83,6 +84,9 @@ type Client struct {
 	keyringServiceName string
 	keyringBackend     cosmosaccount.KeyringBackend
 	keyringDir         string
+
+	gas       string
+	gasPrices string
 }
 
 // Option configures your client.
@@ -146,6 +150,18 @@ func WithUseFaucet(faucetAddress, denom string, minAmount uint64) Option {
 	}
 }
 
+func WithGas(gas string) Option {
+	return func(c *Client) {
+		c.gas = gas
+	}
+}
+
+func WithGasPrices(gasPrices string) Option {
+	return func(c *Client) {
+		c.gasPrices = gasPrices
+	}
+}
+
 // New creates a new client with given options.
 func New(ctx context.Context, options ...Option) (Client, error) {
 	c := Client{
@@ -156,6 +172,7 @@ func New(ctx context.Context, options ...Option) (Client, error) {
 		faucetDenom:     defaultFaucetDenom,
 		faucetMinAmount: defaultFaucetMinAmount,
 		out:             io.Discard,
+		gas:             strconv.Itoa(defaultGasLimit),
 	}
 
 	var err error
@@ -306,6 +323,20 @@ func (c Client) BroadcastTx(accountName string, msgs ...sdktypes.Msg) (Response,
 	return broadcast()
 }
 
+func (c Client) GenerateTx(accountName string, msgs ...sdktypes.Msg) (string, error) {
+	unsignedTx, _, err := c.BroadcastTxWithProvision(accountName, msgs...)
+	if err != nil {
+		return "", err
+	}
+
+	json, err := c.context.TxConfig.TxJSONEncoder()(unsignedTx.GetTx())
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
 // protects sdktypes.Config.
 var mconf sync.Mutex
 
@@ -325,9 +356,9 @@ func performQuery[T any](c Client, q func() (T, error)) (T, error) {
 }
 
 func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Msg) (
-	gas uint64, broadcast func() (Response, error), err error) {
+	unsignedTx client.TxBuilder, broadcast func() (Response, error), err error) {
 	if err := c.prepareBroadcast(context.Background(), accountName, msgs); err != nil {
-		return 0, nil, err
+		return nil, nil, err
 	}
 
 	// TODO find a better way if possible.
@@ -336,7 +367,7 @@ func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Ms
 
 	accountAddress, err := c.Address(accountName)
 	if err != nil {
-		return 0, nil, err
+		return nil, nil, err
 	}
 
 	ctx := c.context.
@@ -345,26 +376,41 @@ func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Ms
 
 	txf, err := prepareFactory(ctx, c.Factory)
 	if err != nil {
-		return 0, nil, err
+		return nil, nil, err
 	}
 
-	_, gas, err = tx.CalculateGas(ctx, txf, msgs...)
-	if err != nil {
-		return 0, nil, err
+	var gas uint64
+	if c.gas != "" && c.gas != "auto" {
+		gas, err = strconv.ParseUint(c.gas, 10, 64)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		_, gas, err = tx.CalculateGas(ctx, txf, msgs...)
+		if err != nil {
+			return nil, nil, err
+		}
+		// the simulated gas can vary from the actual gas needed for a real transaction
+		// we add an additional amount to endure sufficient gas is provided
+		gas += 10000
 	}
-	// the simulated gas can vary from the actual gas needed for a real transaction
-	// we add an additional amount to endure sufficient gas is provided
-	gas += 10000
+
 	txf = txf.WithGas(gas)
 
-	// Return the provision function
-	return gas, func() (Response, error) {
-		txUnsigned, err := tx.BuildUnsignedTx(txf, msgs...)
-		if err != nil {
-			return Response{}, err
-		}
+	if c.gasPrices != "" {
+		txf = txf.WithGasPrices(c.gasPrices)
+	}
 
-		txUnsigned.SetFeeGranter(ctx.GetFeeGranterAddress())
+	txUnsigned, err := tx.BuildUnsignedTx(txf, msgs...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	txUnsigned.SetFeeGranter(ctx.GetFeeGranterAddress())
+
+	// Return the provision function
+	return txUnsigned, func() (Response, error) {
+
 		if err := tx.Sign(txf, accountName, txUnsigned, true); err != nil {
 			return Response{}, err
 		}
@@ -517,6 +563,7 @@ func newContext(
 	sdktypes.RegisterInterfaces(interfaceRegistry)
 	staking.RegisterInterfaces(interfaceRegistry)
 	cryptocodec.RegisterInterfaces(interfaceRegistry)
+	banktypes.RegisterInterfaces(interfaceRegistry)
 
 	return client.Context{}.
 		WithChainID(chainID).

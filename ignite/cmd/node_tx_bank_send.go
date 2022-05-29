@@ -21,7 +21,9 @@ func NewNodeTxBankSend() *cobra.Command {
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
 	c.Flags().AddFlagSet(flagSetAccountPrefixes())
 	c.Flags().AddFlagSet(flagSetKeyringDir())
-	c.Flags().AddFlagSet(flagTxFrom())
+	c.Flags().AddFlagSet(flagSetTxFrom())
+	c.Flags().AddFlagSet(flagSetGenerateOnly())
+	c.Flags().AddFlagSet(flagSetGasFlags())
 
 	return c
 }
@@ -37,6 +39,9 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		node             = getRPC(cmd)
 		keyringBackend   = getKeyringBackend(cmd)
 		keyringDir       = getKeyringDir(cmd)
+		generateOnly     = getGenerateOnly(cmd)
+		gas              = getGas(cmd)
+		gasPrices        = getGasPrices(cmd)
 	)
 
 	session := cliui.New()
@@ -50,6 +55,8 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		cosmosclient.WithKeyringBackend(keyringBackend),
 		cosmosclient.WithKeyringDir(keyringDir),
 		cosmosclient.WithNodeAddress(node),
+		cosmosclient.WithGas(gas),
+		cosmosclient.WithGasPrices(gasPrices),
 	)
 	if err != nil {
 		return err
@@ -64,7 +71,7 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 		if fromInputIsAccount {
 			from = fromAccountInput
 		} else {
-			return fmt.Errorf("\"--%s\" flag is required when from address is not an account", flagFrom)
+			return fmt.Errorf("\"--%s\" flag is required when from address is not an account name", flagFrom)
 		}
 	}
 
@@ -81,6 +88,15 @@ func nodeTxBankSendHandler(cmd *cobra.Command, args []string) error {
 	coins, err := sdk.ParseCoinsNormalized(amount)
 	if err != nil {
 		return err
+	}
+
+	if generateOnly {
+		tx, err := client.BankSendGenerateOnly(fromAddress, toAddress, coins, from)
+		if err != nil {
+			return err
+		}
+
+		return session.Println(tx)
 	}
 
 	if err := client.BankSend(fromAddress, toAddress, coins, from); err != nil {

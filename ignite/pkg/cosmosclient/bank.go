@@ -38,3 +38,13 @@ func (c Client) BankSend(fromAddress string, toAddress string, amount sdk.Coins,
 
 	return nil
 }
+
+func (c Client) BankSendGenerateOnly(fromAddress string, toAddress string, amount sdk.Coins, fromAccountName string) (string, error) {
+	msg := &banktypes.MsgSend{
+		FromAddress: fromAddress,
+		ToAddress:   toAddress,
+		Amount:      amount,
+	}
+
+	return c.GenerateTx(fromAccountName, msg)
+}
