@@ -34,6 +34,7 @@ func NewNetworkChainPrepare() *cobra.Command {
 	c.Flags().String(flagSPNChainID, networktypes.SPNChainID, "Chain ID of SPN")
 	c.Flags().AddFlagSet(flagNetworkFrom())
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
+	c.Flags().AddFlagSet(flagSetKeyringDir())
 	c.Flags().AddFlagSet(flagSetHome())
 
 	return c

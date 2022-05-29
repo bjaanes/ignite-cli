@@ -17,7 +17,7 @@ func NewAccountDelete() *cobra.Command {
 	}
 
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
-	c.Flags().AddFlagSet(flagSetAccountKeyringDir())
+	c.Flags().AddFlagSet(flagSetKeyringDir())
 
 	return c
 }

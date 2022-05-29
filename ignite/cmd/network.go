@@ -163,6 +163,11 @@ func getNetworkCosmosClient(cmd *cobra.Command) (cosmosclient.Client, error) {
 		cosmosOptions = append(cosmosOptions, cosmosclient.WithKeyringBackend(keyringBackend))
 	}
 
+	keyringDir := getKeyringDir(cmd)
+	if keyringDir != "" {
+		cosmosOptions = append(cosmosOptions, cosmosclient.WithKeyringDir(keyringDir))
+	}
+
 	// init cosmos client only once on start in order to spnclient to
 	// reuse unlocked keyring in the following steps.
 	if cosmos == nil {

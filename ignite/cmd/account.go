@@ -59,9 +59,9 @@ func getKeyringBackend(cmd *cobra.Command) cosmosaccount.KeyringBackend {
 	return cosmosaccount.KeyringBackend(backend)
 }
 
-func flagSetAccountKeyringDir() *flag.FlagSet {
+func flagSetKeyringDir() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fs.String(flagKeyringDir, cosmosaccount.KeyringHome, "The accounts Keyring directory")
+	fs.String(flagKeyringDir, cosmosaccount.KeyringHome, "The accounts keyring directory")
 	return fs
 }
 

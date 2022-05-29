@@ -20,7 +20,7 @@ func NewNodeTxBankSend() *cobra.Command {
 	c.Flags().AddFlagSet(flagSetHome())
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
 	c.Flags().AddFlagSet(flagSetAccountPrefixes())
-	c.Flags().AddFlagSet(flagSetAccountKeyringDir())
+	c.Flags().AddFlagSet(flagSetKeyringDir())
 	c.Flags().AddFlagSet(flagTxFrom())
 
 	return c

@@ -19,7 +19,7 @@ func NewAccountExport() *cobra.Command {
 	}
 
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
-	c.Flags().AddFlagSet(flagSetAccountKeyringDir())
+	c.Flags().AddFlagSet(flagSetKeyringDir())
 	c.Flags().AddFlagSet(flagSetAccountImportExport())
 	c.Flags().String(flagPath, "", "path to export private key. default: ./key_[name]")
 
