@@ -2,6 +2,7 @@ package ignitecmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )

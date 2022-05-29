@@ -7,7 +7,7 @@ import (
 var rpcAddress string
 
 const (
-	flagRpc         = "rpc"
+	flagRPC         = "rpc"
 	rpcAddressLocal = "tcp://localhost:26657"
 )
 
@@ -18,7 +18,7 @@ func NewNode() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 
-	c.PersistentFlags().StringVar(&rpcAddress, flagRpc, rpcAddressLocal, "<host>:<port> to tendermint rpc interface for this chain")
+	c.PersistentFlags().StringVar(&rpcAddress, flagRPC, rpcAddressLocal, "<host>:<port> to tendermint rpc interface for this chain")
 
 	c.AddCommand(NewNodeQuery())
 	c.AddCommand(NewNodeTx())
@@ -27,6 +27,6 @@ func NewNode() *cobra.Command {
 }
 
 func getRPC(cmd *cobra.Command) (rpc string) {
-	rpc, _ = cmd.Flags().GetString(flagRpc)
+	rpc, _ = cmd.Flags().GetString(flagRPC)
 	return
 }
