@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
-	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/ignite-hq/cli/ignite/pkg/cliui"
 	"github.com/ignite-hq/cli/ignite/pkg/cosmosclient"
 	"github.com/spf13/cobra"
@@ -22,7 +21,7 @@ func NewNodeQueryBankBalances() *cobra.Command {
 	c.Flags().AddFlagSet(flagSetAccountPrefixes())
 	c.Flags().AddFlagSet(flagSetKeyringBackend())
 	c.Flags().AddFlagSet(flagSetKeyringDir())
-	sdkflags.AddPaginationFlagsToCmd(c, "all balances")
+	c.Flags().AddFlagSet(flagSetPagination("all balances"))
 
 	return c
 }
