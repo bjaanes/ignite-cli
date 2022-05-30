@@ -59,7 +59,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	session.StartSpinner("Querying")
+	session.StartSpinner("Querying...")
 	balances, err := client.BankBalances(address, pagination)
 	if err != nil {
 		return err
@@ -67,11 +67,7 @@ func nodeQueryBankBalancesHandler(cmd *cobra.Command, args []string) error {
 
 	var rows [][]string
 	for _, b := range balances {
-		row := make([]string, 2)
-		row[0] = fmt.Sprintf("%s", b.Amount)
-		row[1] = b.Denom
-
-		rows = append(rows, row)
+		rows = append(rows, []string{fmt.Sprintf("%s", b.Amount), b.Denom})
 	}
 
 	return session.PrintTable([]string{"Amount", "Denom"}, rows...)
