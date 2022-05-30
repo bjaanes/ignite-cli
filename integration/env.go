@@ -278,39 +278,6 @@ func (e Env) IsFaucetServed(ctx context.Context, faucetClient cosmosfaucet.HTTPC
 	return backoff.Retry(checkAlive, backoff.WithContext(backoff.NewConstantBackOff(time.Second), ctx))
 }
 
-type Account struct {
-	Name    string
-	Address string
-	Secret  string
-}
-
-/*func (e Env) AccountsInKeyring(homePath string, keyringBackend cosmosaccount.KeyringBackend, prefix string) []Account {
-	if keyringBackend == "" {
-		keyringBackend = keyring.BackendTest
-	}
-	registry, err := cosmosaccount.New(
-		cosmosaccount.WithKeyringBackend(keyringBackend),
-		cosmosaccount.WithHome(homePath),
-	)
-	require.NoError(e.t, err)
-
-	registryList, err := registry.List()
-	require.NoError(e.t, err)
-
-	var accounts []Account
-	for _, a := range registryList {
-		secret, err := registry.ExportHex(a.Name, "")
-		require.NoError(e.t, err)
-		accounts = append(accounts, Account{
-			Name:    a.Name,
-			Address: a.Address(prefix),
-			Secret:  secret,
-		})
-	}
-
-	return accounts
-}*/
-
 // TmpDir creates a new temporary directory.
 func (e Env) TmpDir() (path string) {
 	path, err := os.MkdirTemp("", "integration")
